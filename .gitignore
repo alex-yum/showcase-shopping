@@ -18,7 +18,10 @@ Thumbs.db
 .settings/
 
 # Claude Code
-.claude/
+.claude/settings.local.json
+.claude/worktrees/
+.claude/memory/
+.claude/todos/
 
 # Environment variables
 .env
