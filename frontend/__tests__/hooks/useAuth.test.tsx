@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { renderHook, waitFor } from '@testing-library/react'
+import { act, renderHook, waitFor } from '@testing-library/react'
 import { AuthProvider } from '@/lib/auth/context'
 import { useAuth } from '@/lib/hooks/useAuth'
 
@@ -20,9 +20,11 @@ describe('useAuth hook', () => {
       wrapper: AuthProvider,
     })
 
-    await result.current.login({
-      email: 'test@example.com',
-      password: 'Test123!@#',
+    await act(async () => {
+      await result.current.login({
+        email: 'test@example.com',
+        password: 'Test123!@#',
+      })
     })
 
     await waitFor(() => {
@@ -43,7 +45,9 @@ describe('useAuth hook', () => {
       expect(result.current.isAuthenticated).toBe(true)
     })
 
-    await result.current.logout()
+    await act(async () => {
+      await result.current.logout()
+    })
 
     await waitFor(() => {
       expect(result.current.isAuthenticated).toBe(false)

@@ -128,8 +128,15 @@ export default function DashboardPage() {
         setOrders(ordersData.orders || [])
         setProducts(productsData.products || [])
         // Validate stats shape before setting
-        if (statsData && typeof statsData.ordersThisMonth === 'number') {
+        if (
+          statsData &&
+          typeof statsData.ordersThisMonth === 'number' &&
+          typeof statsData.totalSpent === 'number' &&
+          typeof statsData.loyaltyPoints === 'number'
+        ) {
           setStats(statsData)
+        } else {
+          throw new Error('Invalid dashboard stats response')
         }
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error)

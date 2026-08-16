@@ -51,11 +51,25 @@ describe('ProductCard', () => {
     render(<ProductCard product={mockProduct} />)
 
     const wishlistButton = screen.getByRole('button', { name: /add to wishlist/i })
+    const heart = wishlistButton.querySelector('svg')
 
-    // Initially not in wishlist (outlined heart)
+    expect(heart).toHaveClass('text-gray-400')
+    expect(heart).not.toHaveClass('fill-red-500')
+
     await user.click(wishlistButton)
 
-    // After click, should be in wishlist (filled heart)
-    expect(wishlistButton).toBeInTheDocument()
+    expect(heart).toHaveClass('fill-red-500')
+    expect(heart).toHaveClass('text-red-500')
+
+    await user.click(wishlistButton)
+
+    expect(heart).toHaveClass('text-gray-400')
+    expect(heart).not.toHaveClass('fill-red-500')
+  })
+
+  it('disables the cart action when product is out of stock', () => {
+    render(<ProductCard product={{ ...mockProduct, inStock: false }} />)
+
+    expect(screen.getByRole('button', { name: /out of stock/i })).toBeDisabled()
   })
 })

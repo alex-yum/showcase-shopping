@@ -13,11 +13,18 @@ export default defineConfig({
       reporter: ['text', 'json', 'html', 'lcov'],
       exclude: [
         'node_modules/',
+        '.next/**',
+        'coverage/**',
+        'public/mockServiceWorker.js',
+        '__tests__/**',
+        '**/*.test.*',
+        '**/*.spec.*',
         'vitest.setup.ts',
         '**/*.config.*',
         '**/*.d.ts',
         '**/mocks/**',
         'e2e/**',
+        'lib/types/**',
       ],
       // MVP-phase thresholds (2026-05-30)
       // Core logic (auth, API) has >90% coverage

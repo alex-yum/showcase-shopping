@@ -59,4 +59,23 @@ describe('OrderCard', () => {
     render(<OrderCard order={pendingOrder} />)
     expect(screen.getByRole('button', { name: /complete payment/i })).toBeInTheDocument()
   })
+
+  it('renders cancelled status without action buttons', () => {
+    const cancelledOrder = { ...mockOrder, status: 'cancelled' as const }
+    render(<OrderCard order={cancelledOrder} />)
+
+    expect(screen.getByText('Cancelled')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /track order/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /buy again/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /complete payment/i })).not.toBeInTheDocument()
+  })
+
+  it('falls back to pending badge for unknown statuses without pending actions', () => {
+    const unknownOrder = { ...mockOrder, status: 'returned' as never }
+    render(<OrderCard order={unknownOrder} />)
+
+    expect(screen.getByText('Pending')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /complete payment/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /cancel/i })).not.toBeInTheDocument()
+  })
 })

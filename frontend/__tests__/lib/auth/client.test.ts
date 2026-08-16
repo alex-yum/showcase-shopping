@@ -48,6 +48,15 @@ describe('authClient', () => {
     expect(authClient.getUser()).toEqual(user)
   })
 
+  it('clears corrupt user JSON and returns null', () => {
+    localStorage.setItem('token', 'test-token')
+    localStorage.setItem('user', '{bad-json')
+
+    expect(authClient.getUser()).toBeNull()
+    expect(localStorage.getItem('token')).toBeNull()
+    expect(localStorage.getItem('user')).toBeNull()
+  })
+
   it('isAuthenticated() returns true when token exists', () => {
     localStorage.setItem('token', 'test-token')
     expect(authClient.isAuthenticated()).toBe(true)

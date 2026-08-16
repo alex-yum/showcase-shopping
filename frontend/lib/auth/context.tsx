@@ -41,9 +41,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const logout = async () => {
-    await authApi.logout()
-    authClient.logout()
-    setUser(null)
+    try {
+      await authApi.logout()
+    } catch (error) {
+      console.error('Logout API failed; clearing local session:', error)
+    } finally {
+      authClient.logout()
+      setUser(null)
+    }
   }
 
   return (
