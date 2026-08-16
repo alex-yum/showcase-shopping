@@ -8,6 +8,10 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   ...(process.env.CI ? { workers: 1 } : {}),
+  // Same as Playwright's default template, minus the trailing {-platform} token,
+  // so macOS-authored and Linux CI baselines are shared instead of every CI run
+  // missing a snapshot because it was recorded on a different OS.
+  snapshotPathTemplate: '{snapshotDir}/{testFileDir}/{testFileName}-snapshots/{arg}{-projectName}{ext}',
   reporter: [
     ['html'],
     ['json', { outputFile: 'test-results/results.json' }],

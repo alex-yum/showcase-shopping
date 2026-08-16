@@ -177,3 +177,18 @@ export const handlers = [
     })
   }),
 ]
+
+// Named failure scenarios for adversarial testing of dashboard fetch error paths.
+// Apply with `server.use(errorHandlers.ordersServerError)` etc. in individual tests.
+export const errorHandlers = {
+  ordersNetworkError: http.get(`${API_BASE}/api/v1/orders`, () => HttpResponse.error()),
+  ordersServerError: http.get(`${API_BASE}/api/v1/orders`, () =>
+    HttpResponse.json({ status: 500, error: 'Internal Server Error' }, { status: 500 })
+  ),
+  productsServerError: http.get(`${API_BASE}/api/v1/products/recommendations`, () =>
+    HttpResponse.json({ status: 500, error: 'Internal Server Error' }, { status: 500 })
+  ),
+  statsServerError: http.get(`${API_BASE}/api/v1/users/stats`, () =>
+    HttpResponse.json({ status: 500, error: 'Internal Server Error' }, { status: 500 })
+  ),
+}

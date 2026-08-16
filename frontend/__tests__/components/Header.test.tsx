@@ -1,18 +1,23 @@
 import React from 'react'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import Header from '@/components/shared/Header'
 
 // Mock useAuth
+const mockUseAuth = vi.fn()
 vi.mock('@/lib/hooks/useAuth', () => ({
-  useAuth: () => ({
-    user: { userId: 1, email: 'john@example.com' },
-    isAuthenticated: true,
-    logout: vi.fn(),
-  }),
+  useAuth: () => mockUseAuth(),
 }))
 
 describe('Header', () => {
+  beforeEach(() => {
+    mockUseAuth.mockReturnValue({
+      user: { userId: 1, email: 'john@example.com' },
+      isAuthenticated: true,
+      logout: vi.fn(),
+    })
+  })
+
   it('renders logo', () => {
     render(<Header />)
     expect(screen.getByText('ShopHub')).toBeInTheDocument()
@@ -38,5 +43,18 @@ describe('Header', () => {
   it('renders user menu with email initial', () => {
     render(<Header />)
     expect(screen.getByText('J')).toBeInTheDocument()
+  })
+
+  it('renders "U" initial and "User" label when unauthenticated (user is null)', () => {
+    mockUseAuth.mockReturnValue({
+      user: null,
+      isAuthenticated: false,
+      logout: vi.fn(),
+    })
+
+    render(<Header />)
+
+    expect(screen.getByText('U')).toBeInTheDocument()
+    expect(screen.getByText('User')).toBeInTheDocument()
   })
 })

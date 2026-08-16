@@ -11,6 +11,13 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
+      // `include` + `all: true` (the v8 default) makes untested source files
+      // show up as 0% instead of being invisible to the coverage report.
+      include: [
+        'app/**/*.{ts,tsx}',
+        'components/**/*.{ts,tsx}',
+        'lib/**/*.{ts,tsx}',
+      ],
       exclude: [
         'node_modules/',
         'vitest.setup.ts',
@@ -18,17 +25,17 @@ export default defineConfig({
         '**/*.d.ts',
         '**/mocks/**',
         'e2e/**',
+        'app/layout.tsx',
+        'app/(auth)/layout.tsx',
+        'app/(dashboard)/layout.tsx',
+        // Type-only files with no runtime code (interfaces/types erase at compile time)
+        'lib/types/**',
       ],
-      // MVP-phase thresholds (2026-05-30)
-      // Core logic (auth, API) has >90% coverage
-      // UI components have basic coverage
-      // Plan: increase to 90%+ post-MVP
-      // See CONTRIBUTING.md for rationale
       thresholds: {
-        lines: 80,
-        functions: 70,
-        branches: 75,
-        statements: 80,
+        lines: 90,
+        functions: 85,
+        branches: 85,
+        statements: 90,
       },
     },
   },

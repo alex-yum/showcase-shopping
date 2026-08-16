@@ -75,4 +75,43 @@ describe('loginSchema', () => {
     const result = loginSchema.safeParse(data)
     expect(result.success).toBe(false)
   })
+
+  it('rejects an empty email with "Email is required"', () => {
+    const result = loginSchema.safeParse({ email: '', password: 'Test123!@#' })
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.error.issues[0].message).toBe('Email is required')
+    }
+  })
+
+  it('rejects an empty password with "Password is required"', () => {
+    const result = loginSchema.safeParse({ email: 'test@example.com', password: '' })
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.error.issues[0].message).toBe('Password is required')
+    }
+  })
+
+  it('rejects a 7-character password (boundary B-1)', () => {
+    const result = loginSchema.safeParse({ email: 'test@example.com', password: 'Ab1!xyz' })
+    expect(result.success).toBe(false)
+  })
+
+  it('accepts an exact 8-character password satisfying all rules (boundary B)', () => {
+    const result = loginSchema.safeParse({ email: 'test@example.com', password: 'Ab1!xyzq' })
+    expect(result.success).toBe(true)
+  })
+
+  it('accepts a 9-character password satisfying all rules (boundary B+1)', () => {
+    const result = loginSchema.safeParse({ email: 'test@example.com', password: 'Ab1!xyzqr' })
+    expect(result.success).toBe(true)
+  })
+
+  it('rejects an email containing a multi-byte emoji', () => {
+    const result = loginSchema.safeParse({ email: '😀@example.com', password: 'Test123!@#' })
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.error.issues[0].path).toContain('email')
+    }
+  })
 })
