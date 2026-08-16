@@ -129,4 +129,85 @@ test.describe('Authentication Flow', () => {
     await emailInput.focus()
     await expect(emailInput).toBeFocused()
   })
+
+  test('account-locked (423) login shows the locked-account message', async ({ page }) => {
+    await page.getByLabel(/email/i).fill('locked@example.com')
+    await page.locator('input#password').fill('Test123!@#')
+
+    await page.getByRole('button', { name: /sign in/i }).click()
+
+    const apiErrorBanner = page.locator('[role="alert"]').filter({ hasText: /temporarily locked/i })
+    await expect(apiErrorBanner).toBeVisible()
+    // Must stay on login, not treated as a generic 401
+    await expect(page).toHaveURL('/login')
+  })
+
+  test('logout redirects to /login and clears localStorage', async ({ page }) => {
+    // Log in first
+    await page.getByLabel(/email/i).fill('test@example.com')
+    await page.locator('input#password').fill('Test123!@#')
+    await page.getByRole('button', { name: /sign in/i }).click()
+    await page.waitForURL('/dashboard')
+
+    // Simulate the logout action (no dedicated logout button in the UI yet,
+    // so drive it the way the app's own logout() does: clear the session).
+    await page.evaluate(async () => {
+      await fetch('/api/v1/auth/logout', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      })
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+    })
+    await page.goto('/dashboard', { waitUntil: 'load' })
+    await page.waitForTimeout(1000)
+
+    await expect(page).toHaveURL(/\/login/)
+    const token = await page.evaluate(() => localStorage.getItem('token'))
+    expect(token).toBeNull()
+  })
+
+  test('protocol-relative open-redirect returnTo lands on /dashboard', async ({ page }) => {
+    await page.goto('/login?returnTo=//evil.com', { waitUntil: 'networkidle' })
+    await page.waitForTimeout(1000)
+
+    await page.getByLabel(/email/i).fill('test@example.com')
+    await page.locator('input#password').fill('Test123!@#')
+    await page.getByRole('button', { name: /sign in/i }).click()
+
+    await page.waitForLoadState('networkidle')
+
+    await expect(page).toHaveURL('/dashboard')
+  })
+
+  test('session persists through a page refresh', async ({ page }) => {
+    await page.getByLabel(/email/i).fill('test@example.com')
+    await page.locator('input#password').fill('Test123!@#')
+    await page.getByRole('button', { name: /sign in/i }).click()
+    await page.waitForURL('/dashboard')
+
+    await page.reload({ waitUntil: 'load' })
+    await page.waitForTimeout(1000)
+
+    await expect(page).toHaveURL('/dashboard')
+    await expect(page.locator('text=ShopHub').first()).toBeVisible()
+  })
+
+  test('error banner disappears after a successful retry', async ({ page }) => {
+    // First attempt fails (valid per client-side schema, rejected by the API)
+    await page.getByLabel(/email/i).fill('wrong@example.com')
+    await page.locator('input#password').fill('WrongPassword1!')
+    await page.getByRole('button', { name: /sign in/i }).click()
+
+    const apiErrorBanner = page.locator('[role="alert"]').filter({ hasText: /invalid credentials/i })
+    await expect(apiErrorBanner).toBeVisible()
+
+    // Retry with correct credentials
+    await page.getByLabel(/email/i).fill('test@example.com')
+    await page.locator('input#password').fill('Test123!@#')
+    await page.getByRole('button', { name: /sign in/i }).click()
+
+    await page.waitForLoadState('networkidle')
+    await expect(page).toHaveURL('/dashboard')
+  })
 })

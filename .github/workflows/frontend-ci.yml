@@ -40,9 +40,31 @@ jobs:
         working-directory: ./frontend
         run: npx tsc --noEmit
 
+      - name: Security audit (dependencies)
+        working-directory: ./frontend
+        run: npm audit --audit-level=high
+
       - name: Run unit and integration tests
         working-directory: ./frontend
         run: npm run test:coverage
+
+      - name: Post coverage summary
+        if: always()
+        working-directory: ./frontend
+        run: |
+          echo "## Coverage Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f "coverage/coverage-summary.json" ]; then
+            node -e "
+              const s = require('./coverage/coverage-summary.json').total;
+              const rows = Object.entries(s).map(([k, v]) => \`| \${k} | \${v.pct}% (\${v.covered}/\${v.total}) |\`).join('\n');
+              console.log('| Metric | Coverage |');
+              console.log('|---|---|');
+              console.log(rows);
+            " >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No coverage-summary.json found." >> $GITHUB_STEP_SUMMARY
+          fi
 
       - name: Upload coverage reports
         if: always()
@@ -53,7 +75,11 @@ jobs:
 
       - name: Build application
         working-directory: ./frontend
-        run: npm run build
+        run: npm run build | tee build-output.txt
+
+      - name: Check bundle size budget
+        working-directory: ./frontend
+        run: node scripts/check-bundle-size.js build-output.txt
 
       - name: Install Playwright browsers
         working-directory: ./frontend
@@ -62,6 +88,18 @@ jobs:
       - name: Run E2E tests
         working-directory: ./frontend
         run: npm run test:e2e
+
+      - name: Run visual regression tests
+        working-directory: ./frontend
+        run: npm run test:visual
+        continue-on-error: true
+
+      - name: Upload visual regression diffs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-regression-report
+          path: frontend/playwright-report/
 
       - name: Upload E2E test results
         if: always()

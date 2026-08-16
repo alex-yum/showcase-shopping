@@ -41,9 +41,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const logout = async () => {
-    await authApi.logout()
-    authClient.logout()
-    setUser(null)
+    try {
+      await authApi.logout()
+    } finally {
+      // Always clear local session, even if the server-side logout call fails —
+      // the user must not be left stuck in a logged-in state client-side.
+      authClient.logout()
+      setUser(null)
+    }
   }
 
   return (
