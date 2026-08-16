@@ -15,7 +15,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   const renderStars = () => {
     const stars = []
-    const fullStars = Math.floor(product.rating)
+    const fullStars = Math.max(0, Math.min(5, Math.floor(product.rating)))
 
     for (let i = 0; i < 5; i++) {
       stars.push(
@@ -64,8 +64,11 @@ export default function ProductCard({ product }: ProductCardProps) {
           <span className="font-display text-3xl font-bold text-gray-900">
             ${product.price.toFixed(2)}
           </span>
-          <Button className="bg-gradient-to-r from-accent to-accent-dark hover:opacity-90 shadow-lg hover:scale-110 transition-all">
-            Add to Cart
+          <Button
+            disabled={!product.inStock}
+            className="bg-gradient-to-r from-accent to-accent-dark hover:opacity-90 shadow-lg hover:scale-110 transition-all"
+          >
+            {product.inStock ? 'Add to Cart' : 'Out of stock'}
           </Button>
         </div>
       </CardContent>

@@ -48,7 +48,7 @@ function LoginFormInner() {
 
       // Validate returnTo is a relative path (prevent open redirect)
       const returnTo = searchParams.get('returnTo') || '/dashboard'
-      const safeReturnTo = returnTo.startsWith('/') && !returnTo.startsWith('//')
+      const safeReturnTo = returnTo.startsWith('/') && !returnTo.startsWith('//') && !returnTo.startsWith('/\\')
         ? returnTo
         : '/dashboard'
 

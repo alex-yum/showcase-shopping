@@ -25,7 +25,15 @@ export const authClient = {
   getUser(): User | null {
     if (typeof window === 'undefined') return null
     const userData = localStorage.getItem(USER_KEY)
-    return userData ? JSON.parse(userData) : null
+    if (!userData) return null
+
+    try {
+      return JSON.parse(userData) as User
+    } catch {
+      localStorage.removeItem(TOKEN_KEY)
+      localStorage.removeItem(USER_KEY)
+      return null
+    }
   },
 
   isAuthenticated(): boolean {

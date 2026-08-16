@@ -14,6 +14,7 @@ const eslintConfig = [
       'out/**',
       'node_modules/**',
       'coverage/**',
+      'public/mockServiceWorker.js',
       'playwright-report/**',
       'test-results/**',
       '*.config.ts',

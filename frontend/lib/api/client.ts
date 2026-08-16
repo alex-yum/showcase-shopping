@@ -29,13 +29,34 @@ export class ApiClient {
       },
     })
 
-    const data = await response.json()
+    const data = await this.parseResponse(response)
 
     if (!response.ok) {
-      throw new ApiError(response.status, data, data.message)
+      const message =
+        data &&
+        typeof data === 'object' &&
+        'message' in data &&
+        typeof data.message === 'string'
+          ? data.message
+          : undefined
+      throw new ApiError(response.status, data, message)
     }
 
     return data as T
+  }
+
+  private async parseResponse(response: Response): Promise<unknown> {
+    const text = await response.text()
+
+    if (!text) {
+      return null
+    }
+
+    try {
+      return JSON.parse(text)
+    } catch {
+      return text
+    }
   }
 
   async get<T>(endpoint: string, options?: RequestInit): Promise<T> {

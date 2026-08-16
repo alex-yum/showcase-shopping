@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { renderHook, waitFor } from '@testing-library/react'
+import { act, renderHook, waitFor } from '@testing-library/react'
 import { AuthProvider } from '@/lib/auth/context'
 import { useAuth } from '@/lib/hooks/useAuth'
 
@@ -18,10 +18,12 @@ describe('Login Flow Integration', () => {
     expect(result.current.user).toBeNull()
 
     // Perform login
-    await result.current.login({
-      email: 'test@example.com',
-      password: 'Test123!@#',
-      rememberMe: true,
+    await act(async () => {
+      await result.current.login({
+        email: 'test@example.com',
+        password: 'Test123!@#',
+        rememberMe: true,
+      })
     })
 
     // Check authentication state
@@ -41,7 +43,9 @@ describe('Login Flow Integration', () => {
     expect(user.userId).toBe(1)
 
     // Perform logout
-    await result.current.logout()
+    await act(async () => {
+      await result.current.logout()
+    })
 
     // Check state cleared
     await waitFor(() => {
@@ -61,9 +65,11 @@ describe('Login Flow Integration', () => {
 
     // Attempt login with wrong credentials
     await expect(
-      result.current.login({
-        email: 'wrong@example.com',
-        password: 'wrong',
+      act(async () => {
+        await result.current.login({
+          email: 'wrong@example.com',
+          password: 'wrong',
+        })
       })
     ).rejects.toThrow()
 
